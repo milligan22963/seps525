@@ -1,0 +1,24 @@
+{
+    "ports": [
+        {
+            "port_type":"spi",
+            "instance": 0,
+            "device": 0,
+            "port_name": "primary interface"
+        },
+        {
+            "port_type":"gpio",
+            "instance": 25,
+            "device": 0,
+            "port_name": "RS"
+        },
+        {
+            "port_type":"gpio",
+            "instance": 26,
+            "device": 0,
+            "port_name": "RESET"
+        }
+    ],
+    "x_resolution":160,
+    "y_resolution": 128
+}

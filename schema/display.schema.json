@@ -1,0 +1,44 @@
+{
+    "$id": "https://afmsoftware.com/schemas/display.schema.json",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$comment": "Schema describing a display configuration",
+    "title": "Display Configuration schema",
+    "type": "object",
+    "properties": {
+        "ports" : {
+            "type":"array",
+            "items": {
+                "type": "object",
+                "description": "The port to interface this display via",
+                "properties": {
+                    "port_type": {
+                        "type":"string",
+                        "description": "The type of port such as gpio, spi, i2c",
+                        "enum": ["gpio", "spi", "i2c"]
+                    },
+                    "instance": {
+                        "type":"integer",
+                        "description": "The instance of this port such as 6 for a gpio pin or 2 for an I2C bus"
+                    },
+                    "device": {
+                        "type": "integer",
+                        "description": "The device on said port such as the I2C address or the SPI selection line"
+                    },
+                    "port_name": {
+                        "type":"string",
+                        "description": "The name/use of this port"
+                    }
+                },
+                "minItems": 1
+            }
+        },
+        "x_resolution": {
+            "type": "integer",
+            "description": "The resolution of the device in X coordinates"
+        },
+        "y_resolution": {
+            "type": "integer",
+            "description": "The resolution of the device in Y coordinates"
+        }
+    }
+}
