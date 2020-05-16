@@ -6,6 +6,7 @@
 
 #include <iostream>
 #include <unistd.h>
+#include <sys/param.h>
 
 #include "Constants.h"
 #include "PortFactory.h"
@@ -17,6 +18,8 @@ namespace afm
     {
         const uint32_t sc_1_millisecond = 1000;
         const uint8_t sc_6_bits = 0x3F; // mask for 6 bit color
+        const uint8_t sc_screen_width = 160;
+        const uint8_t sc_screen_height = 128;
 
         const std::string sc_rs_pin = "RS";
         const std::string sc_reset_pin = "RESET";
@@ -93,9 +96,9 @@ namespace afm
             m_reset_pin = nullptr;
         }
 
-        void SESP525Display::clear_screen(const data::Color color)
+        void SESP525Display::clear_screen(const data::Color &color)
         {
-            set_position(data::Coordinate_8t(1, 1));
+            set_position(1, 1);
 
             write_data_start();
             for (uint32_t index = 0; index < get_x_resolution() * get_y_resolution(); index++)
@@ -104,12 +107,87 @@ namespace afm
             }
         }
 
-        void SESP525Display::set_pixel(const data::Coordinate_8t position, const data::Color color)
+        void SESP525Display::set_pixel(const data::Coordinate_8t &position, const data::Color &color)
         {
-            set_position(position);
+            set_pixel(position.x, position.y, color);
+        }
 
-            write_data_start();
-            write_pixel(color);
+        void SESP525Display::draw_rectangle(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2)
+        {
+        }
+        
+        void SESP525Display::draw_rectangle(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t thickness)
+        {
+        }
+        
+        void SESP525Display::fill_rectangle(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2)
+        {
+        }
+        
+        void SESP525Display::draw_line(const data::Coordinate_8t &start, const data::Coordinate_8t &end, const data::Color &color)
+        {
+            uint8_t x1 = MIN(start.x, end.x);
+            uint8_t x2 = MAX(start.x, end.x);
+            uint8_t y1 = MIN(start.y, end.y);
+            uint8_t y2 = MAX(start.y, end.y);
+            
+            uint8_t dy = y2 - y1;
+            uint8_t dx = x2 - x1;
+                        
+            if (x1 >= sc_screen_width)
+            {
+                x1 = sc_screen_width - 1;
+            }
+            
+            if (x2 >= sc_screen_width)
+            {
+                x2 = sc_screen_width - 1;
+            }
+            
+            if (x1 == x2)
+            {
+                x2++; // give us one pixel width
+            }
+            
+            /* Utilizing the Bresenham algorithm */
+            int eps = 0;
+
+            if (y1 != y2)
+            {
+                for (/* set above */; y1 < y2; y1++)
+                {
+                    for (uint8_t xCord = x1; xCord < x2; xCord++)
+                    {
+                        set_pixel(xCord, y1, color);
+                        eps += dy;
+
+                        if ((eps << 1) >= dx)
+                        {
+                            y1++;
+                            eps -= dx;
+                        }
+                    }
+                }
+            }
+            else// if (y1 == y2)
+            {
+                for (uint8_t xCord = x1; xCord < x2; xCord++)
+                {
+                    set_pixel(xCord, y1, color);
+                }
+            }
+        }
+        
+        void SESP525Display::print(char *data)
+        {
+        }
+        
+        void SESP525Display::print_line(char *data)
+        {
+        }
+        
+        void SESP525Display::printf(const char * __format, ...)
+        {
         }
 
         // internal parts
@@ -137,10 +215,11 @@ namespace afm
 
                 if (m_rs_pin != nullptr)
                 {
-if (m_reset_pin != nullptr)
-{
-    m_reset_pin->write(constants::sc_gpio_high);
-}
+                    if (m_reset_pin != nullptr)
+                    {
+                        m_reset_pin->write(constants::sc_gpio_high);
+                    }
+
                     /**
                      * Settings based off of:
                      * https://github.com/NewhavenDisplay/NHD-1.69-160128ASC3_Example/blob/master/examples/test/test.ino
@@ -198,7 +277,7 @@ if (m_reset_pin != nullptr)
                     select_window(data::Coordinate_8t(1, 1),
                         data::Coordinate_8t(get_x_resolution(), get_y_resolution()));
 
-                    set_position(data::Coordinate_8t(1, 1));
+                    set_position(1, 1);
 
                     // Turn display om
                     write_register(SESP525_Command::SESP525_DISP_ON_OFF, 1);
@@ -241,10 +320,10 @@ if (m_reset_pin != nullptr)
             write_register(SESP525_Command::SESP525_MY2_ADDRESS, end.y - 1);
         }
 
-        void SESP525Display::set_position(data::Coordinate_8t position)
+        void SESP525Display::set_position(uint8_t x, uint8_t y)
         {
-            write_register(SESP525_Command::SESP525_MEMORY_ACCESS_POINTER_X, position.x - 1);
-            write_register(SESP525_Command::SESP525_MEMORY_ACCESS_POINTER_Y, position.y - 1);
+            write_register(SESP525_Command::SESP525_MEMORY_ACCESS_POINTER_X, x - 1);
+            write_register(SESP525_Command::SESP525_MEMORY_ACCESS_POINTER_Y, y - 1);
         }
 
         void SESP525Display::write_register(uint8_t target_register, uint8_t value)
@@ -272,6 +351,14 @@ if (m_reset_pin != nullptr)
             get_port()->write(color.red & sc_6_bits);
             get_port()->write(color.green & sc_6_bits);
             get_port()->write(color.blue & sc_6_bits);
+        }
+
+        void SESP525Display::set_pixel(const uint8_t x, const uint8_t y, const data::Color color)
+        {
+            set_position(x, y);
+
+            write_data_start();
+            write_pixel(color);
         }
     }
 }

@@ -10,6 +10,7 @@
 #include <unistd.h>
 
 #include "Constants.h"
+#include "DataTypes.h"
 #include "DisplayFactory.h"
 
 int main(int argc, char * argv[])
@@ -32,7 +33,7 @@ int main(int argc, char * argv[])
 
         if (p_display != nullptr)
         {
-std::cout << "Have display, will run\n";
+            std::cout << "Have display, will run\n";
             while (1)
             {
                 p_display->clear_screen(afm::constants::BLUE);
@@ -44,6 +45,10 @@ std::cout << "Have display, will run\n";
                 sleep(1);
 
                 p_display->clear_screen(afm::constants::GREEN);
+
+                sleep(1);
+
+                p_display->draw_line(afm::data::Coordinate_8t(5, 5), afm::data::Coordinate_8t(50, 80), afm::constants::BLUE);
 
                 sleep(1);
             }

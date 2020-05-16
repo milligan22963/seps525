@@ -46,12 +46,12 @@ namespace afm
             return success;
         }
 
-        void Display::clear_screen(const data::Color color)
+        void Display::clear_screen(const data::Color &color)
         {
             // do nothing and hope for the best
         }
 
-        void Display::set_pixel(const data::Coordinate_8t position, const data::Color color)
+        void Display::set_pixel(const data::Coordinate_8t &position, const data::Color &color)
         {
             
         }

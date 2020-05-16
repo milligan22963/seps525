@@ -29,8 +29,8 @@ namespace afm
                 virtual ~Display();
 
                 virtual bool initialize(const nlohmann::json &configuration) final;
-                virtual void clear_screen(const data::Color color) override;
-                virtual void set_pixel(const data::Coordinate_8t position, const data::Color color) override;
+                virtual void clear_screen(const data::Color &color) override;
+                virtual void set_pixel(const data::Coordinate_8t &position, const data::Color &color) override;
                 virtual bool reset() final;
 
             protected:
